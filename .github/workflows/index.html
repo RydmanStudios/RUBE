@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rube - The Best Rubik's Cube Timer</title>
+</head>
+<style>
+    body {
+        text-align: center;
+        background-color: black;
+        color: navy;
+    }
+
+    #timer {
+        font-size: 100px;
+        padding: 30px;
+        border-radius: 30px;
+        background-color: rgb(0, 0, 35);
+        font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    }
+
+    h1 {
+        font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 40px;
+    }
+
+    p {
+        font-family: 'Times New Roman', Times, serif;
+    }
+
+    #list {
+        border: 5px black solid;
+        border-radius: 20px;
+        padding: 25px;
+        display: inline-block;
+        background-color: rgb(0, 0, 35);
+    }
+
+    h3 {
+        padding: 5px;
+        margin: 2px;
+        width: 10%;
+    }
+
+    #stats {
+        padding: 25px;
+        background-color: rgb(0, 0, 35);
+        margin-left: 20%;
+        margin-right: 20%;
+        margin-top: 15px;
+        margin-bottom: 15px;
+        border-radius: 20px;
+    }
+
+    #scramble {
+        padding: 5px;
+        background-color: rgb(0, 0, 35);
+        margin-left: 20%;
+        margin-right: 20%;
+        border-radius: 20px;
+        font-size: 30px;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+
+    hr {
+        border-top: none;
+        border-left: none;
+        border-right: none;
+        border-width: 5px;
+        border-color: black;
+    }
+
+    #best {
+        color: darkgreen;
+    }
+
+    #average {
+        color: blue;
+    }
+
+    #instructions {
+        color: blue;
+    }
+
+    #scramble_p {
+        font-family:'Courier New', Courier, monospace;
+    }
+
+    #theme {
+        padding: 2px;
+        color: white;
+        background-color: black;
+    }
+</style>
+<body>
+    <h1>- R U B E -</h1>
+    <div id="scramble">
+
+    </div>
+    <p id="timer">0.000</p>
+    <p id="instructions">Press <b>spacebar</b> to start, and any key other then <b>spacebar</b> to end.</p>
+    <!--<button id="start" onclick="Start()">Start</button>
+    <button id="stop" onclick="Stop()">Stop</button>
+    <button id="reset" onclick="Reset()">Reset</button>-->
+    <div id="stats">
+        <p><b>Best: </b><span id="best"></span></p>
+        <p><b>Average: </b><span id="average"></span></p>
+    </div>
+    <div id="list">
+
+    </div>
+    <br>
+    <label for="theme">Theme: </label>
+    <select name="theme" id="theme">
+        <option value="red">Red</option>
+        <option value="orange">Orange</option>
+        <option value="yellow">Yellow</option>
+        <option value="green">Green</option>
+        <option value="blue">Blue</option>
+        <option value="purple">Purple</option>
+        <option value="pink">Pink</option>
+        <option value="gray">Grayscale</option>
+    </select>
+    <!--<p id="instructions"><i>Please note, after changing the theme, make sure to click on the background to remove the focus on the theme selection.</i></p>-->
+    <hr>
+</body>
+</html>
+<script>
+    const timer = document.getElementById('timer');
+    //const start = document.getElementById('start');
+    //const stop = document.getElementById('stop');
+    //const reset = document.getElementById('reset');
+    const list = document.getElementById('list');
+    const best = document.getElementById('best');
+    const average = document.getElementById('average');
+    const scramble_container = document.getElementById('scramble')
+    const instructions = document.getElementById('instructions')
+    const theme = document.getElementById('theme')
+
+    let time = 0;
+    let clock = Date.now();
+    let save = 0;
+    let running = false;
+    let timelist = [];
+    let besttime = 0;
+    let averagetime = 0;
+
+    const movements = ["R", "U", "F", "B", "D", "L", "R'", "U'", "F'", "B'", "D'", "L'", "R2", "U2", "F2", "B2", "D2", "L2", "R'2", "U'2", "F'", "B'2", "D'2", "L'2"]
+
+    function roundToMillionths(number) {
+        // Multiply the number by 10^6 (1,000,000) to shift the decimal point
+        const scaledNumber = number * 1000000;
+
+        // Round the scaled number to the nearest integer
+        const roundedScaledNumber = Math.round(scaledNumber);
+
+        // Divide the rounded scaled number by 10^6 to shift the decimal point back
+        const result = roundedScaledNumber / 1000000;
+
+        return result;
+}
+
+    function getAverageForLoop(arr) {
+        if (arr.length === 0) {
+            return 0; // Handle empty array to avoid division by zero
+        }
+        let sum = 0;
+        for (let i = 0; i < arr.length; i++) {
+            sum += arr[i];
+        }
+         return sum / arr.length;
+    }
+
+    function hideScramble() {
+        scramble_container.innerHTML = '';
+    }
+
+    function generateScramble() {
+        let scramble = '';
+        const random_number = (Math.floor(Math.random() * 5)) + 12;
+        let random = 0;
+        let last = '';
+
+        for (let i = 0; i < random_number; i++) {
+            scramble = scramble + ' ';
+            random = Math.floor(Math.random() * movements.length);
+            if (movements[random].includes(last)) {
+                random = Math.floor(Math.random() * movements.length);
+            }
+            if (movements[random].includes(last)) {
+                random = Math.floor(Math.random() * movements.length);
+            }
+            if (movements[random].includes(last)) {
+                random = Math.floor(Math.random() * movements.length);
+            }
+            scramble = scramble + movements[random];
+            console.log(random);
+            console.log(movements[random]);
+            scramble = scramble + ' ';
+            if (movements[random].includes('R')) {
+                last = 'R';
+            } else if (movements[random].includes('F')) {
+                last = 'F';
+            } else if (movements[random].includes('B')) {
+                last = 'B';
+            } else if (movements[random].includes('D')) {
+                last = 'D';
+            } else if (movements[random].includes('U')) {
+                last = 'U';
+            } else if (movements[random].includes('L')) {
+                last = 'L';
+            };
+        }
+
+        scramble_container.innerHTML = "<p id='scramble_p'>" + scramble + "</p>";
+    }
+
+    function themeOverride(color) {
+        if (color == 'red') {
+            document.body.style.color = 'darkred'
+            timer.style.backgroundColor = 'rgb(30, 0, 0)'
+            list.style.backgroundColor = 'rgb(30, 0, 0)'
+            stats.style.backgroundColor = 'rgb(30, 0, 0)'
+            scramble_container.style.backgroundColor = 'rgb(30, 0, 0)'
+            instructions.style.color = 'red'
+            average.style.color = 'red'
+        } else if (color == 'orange') {
+            document.body.style.color = 'darkorange'
+            timer.style.backgroundColor = 'rgb(30, 15, 0)'
+            list.style.backgroundColor = 'rgb(30, 15, 0)'
+            stats.style.backgroundColor = 'rgb(30, 15, 0)'
+            scramble_container.style.backgroundColor = 'rgb(30, 15, 0)'
+            instructions.style.color = 'orange'
+            average.style.color = 'orange'
+        } else if (color == 'yellow') {
+            document.body.style.color = 'darkyellow'
+            timer.style.backgroundColor = 'rgb(30, 30, 0)'
+            list.style.backgroundColor = 'rgb(30, 30, 0)'
+            stats.style.backgroundColor = 'rgb(30, 30, 0)'
+            scramble_container.style.backgroundColor = 'rgb(30, 30, 0)'
+            instructions.style.color = 'yellow'
+            average.style.color = 'yellow'
+        } else if (color == 'green') {
+            document.body.style.color = 'darkgreen'
+            timer.style.backgroundColor = 'rgb(0, 30, 0)'
+            list.style.backgroundColor = 'rgb(0, 30, 0)'
+            stats.style.backgroundColor = 'rgb(0, 30, 0)'
+            scramble_container.style.backgroundColor = 'rgb(0, 30, 0)'
+            instructions.style.color = 'green'
+            average.style.color = 'green'
+        } else if (color == 'blue') {
+            document.body.style.color = 'darkblue'
+            timer.style.backgroundColor = 'rgb(0, 0, 30)'
+            list.style.backgroundColor = 'rgb(0, 0, 30)'
+            stats.style.backgroundColor = 'rgb(0, 0, 30)'
+            scramble_container.style.backgroundColor = 'rgb(0, 0, 30)'
+            instructions.style.color = 'blue'
+            average.style.color = 'blue'
+        } else if (color == 'purple') {
+            document.body.style.color = 'rgb(100, 0, 100)'
+            timer.style.backgroundColor = 'rgb(30, 0, 30)'
+            list.style.backgroundColor = 'rgb(30, 0, 30)'
+            stats.style.backgroundColor = 'rgb(30, 0, 30)'
+            scramble_container.style.backgroundColor = 'rgb(30, 0, 30)'
+            instructions.style.color = 'purple'
+            average.style.color = 'purple'
+        } else if (color == 'pink') {
+            document.body.style.color = 'rgb(100, 0, 50)'
+            timer.style.backgroundColor = 'rgb(30, 0, 15)'
+            list.style.backgroundColor = 'rgb(30, 0, 15)'
+            stats.style.backgroundColor = 'rgb(30, 0, 15)'
+            scramble_container.style.backgroundColor = 'rgb(30, 0, 15)'
+            instructions.style.color = 'pink'
+            average.style.color = 'pink'
+        } else if (color == 'gray') {
+            document.body.style.color = 'darkgray'
+            timer.style.backgroundColor = 'rgb(30, 30, 30)'
+            list.style.backgroundColor = 'rgb(30, 30, 30)'
+            stats.style.backgroundColor = 'rgb(30, 30, 30)'
+            scramble_container.style.backgroundColor = 'rgb(30, 30, 30)'
+            instructions.style.color = 'white'
+            average.style.color = 'white'
+        };
+    }
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key == ' ') {
+            running = true
+            save = Date.now();
+            timer.textContent = '   .   .   .   '
+            window.scrollTo(0,0)
+            hideScramble();
+        } 
+    })
+
+    document.addEventListener('keydown', function(event) {
+        if (event.key != ' ') {
+            running = false;
+            clock = Date.now();
+            time = (clock - save) / 1000;
+            timer.textContent = time;
+            const element =  document.createElement('h3');
+            element.textContent = time;
+            list.appendChild(element);
+            timelist.push(time);
+            console.log(timelist);
+
+            besttime = Math.min(...timelist);
+            averagetime = getAverageForLoop(timelist);
+            best.textContent = besttime;
+            average.textContent = roundToMillionths(averagetime);
+            window.scrollTo(0,0)
+            generateScramble();
+        } 
+    })
+
+    theme.addEventListener('change', function() {
+        themeOverride(theme.value)
+    })
+
+    generateScramble();
+    //themeOverride('red');
+</script>
